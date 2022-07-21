@@ -1,0 +1,18 @@
+version: '3'
+
+services:
+
+  postgres:
+    image: 'postgres:latest'
+    ports:
+      - "5436:5432"
+    deploy:
+      mode: replicated
+      replicas: 1
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: aero-internship
+    volumes:
+      - ./db.sql:/docker-entrypoint-initdb.d/db.sql
+      - postgres-server:/var/lib/postgres-server/data
