@@ -1,5 +1,8 @@
 version: '3'
 
+volumes:
+  postgres-server:
+
 services:
 
   postgres:
@@ -14,5 +17,5 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: aero-internship
     volumes:
-      - ./db.sql:/docker-entrypoint-initdb.d/db.sql
+      - ./db.sql.sql:/docker-entrypoint-initdb.d/db.sql.sql
       - postgres-server:/var/lib/postgres-server/data
