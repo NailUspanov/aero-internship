@@ -1,7 +1,9 @@
 package postgres
 
 import (
+	"aero-internship/pkg/config"
 	"fmt"
+
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
@@ -19,9 +21,17 @@ type Config struct {
 	SSLMode  string
 }
 
-func NewPostgresDB(cfg Config) (*sqlx.DB, error) {
-	db, err := sqlx.Open("postgres", fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=%s",
-		cfg.Host, cfg.Port, cfg.Username, cfg.DBName, cfg.Password, cfg.SSLMode))
+func NewPostgresDB(cfg *config.Config) (*sqlx.DB, error) {
+	connString := fmt.Sprintf(
+		"host=%s port=%s user=%s dbname=%s password=%s sslmode=%s",
+		cfg.GetDBHost(),
+		cfg.GetDBPort(),
+		cfg.GetDBUsername(),
+		cfg.GetDBName(),
+		cfg.GetDBPassword(),
+		cfg.GetDBSSLmode(),
+	)
+	db, err := sqlx.Open("postgres", connString)
 
 	if err != nil {
 		return nil, err

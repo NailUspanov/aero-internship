@@ -10,3 +10,9 @@ create:
 
 clean:
 	rm gen/*.go
+
+build:
+	go mod tidy && go build -o app.out ./cmd/app
+
+run: build
+	./app.out
