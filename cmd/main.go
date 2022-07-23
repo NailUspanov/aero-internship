@@ -2,19 +2,22 @@ package main
 
 import (
 	"aero-internship/gen/api"
-	"aero-internship/internal/adapters/handlers/v1"
+	v1 "aero-internship/internal/adapters/handlers/v1"
+	"aero-internship/internal/config"
 	"aero-internship/pkg/client/postgres"
 	"context"
+	"net"
+	"net/http"
+
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
-	"net"
-	"net/http"
-	"os"
 )
 
 func main() {
+	// на этапе компиляции возникает слудующая ошибка: open .env: The system cannot find the file specified. Как я понял он не видит env. Нужна помощь, как указать путь к env?
+	cfg := config.ConfigData()
 
 	// инициализация env конфига
 	if err := godotenv.Load(); err != nil {
@@ -22,14 +25,7 @@ func main() {
 	}
 
 	//соединение с бд
-	_, err := postgres.NewPostgresDB(postgres.Config{
-		Host:     os.Getenv("DB_HOST"),
-		Port:     os.Getenv("DB_PORT"),
-		Username: os.Getenv("DB_USERNAME"),
-		Password: os.Getenv("DB_PASSWORD"),
-		DBName:   os.Getenv("DB_NAME"),
-		SSLMode:  os.Getenv("DB_SSLMODE"),
-	})
+	_, err := postgres.NewPostgresDB(postgres.Config{})
 
 	if err != nil {
 		logrus.Fatalf("failed to initialize db.sql %s", err.Error())
@@ -39,7 +35,10 @@ func main() {
 	go func() {
 		mux := runtime.NewServeMux()
 		api.RegisterContentCheckServiceHandlerServer(context.Background(), mux, srv)
-		logrus.Fatalln(http.ListenAndServe("localhost:8000", mux))
+
+		// подставляем переменные из конфига, только у нас localhost:8000, а в env он равен 5436, нужно ли в env добавлять еще порты??
+		logrus.Fatalln(http.ListenAndServe(cfg.DB_HOST+cfg.DB_PORT, mux))
+		// logrus.Fatalln(http.ListenAndServe("localhost:8000", mux))
 	}()
 
 	l, err := net.Listen("tcp", ":8080")
