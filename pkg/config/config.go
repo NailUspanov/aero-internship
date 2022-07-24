@@ -19,9 +19,11 @@ type Config struct {
 	rest_host   string
 	rest_port   string
 	main_dir    string
-	// jwt_secret  string
-	// jwt_ttl     string
-	// refresh_ttl string
+	cert_file   string
+	key_file    string
+	jwt_secret  string
+	jwt_ttl     string
+	refresh_ttl string
 }
 
 func NewConfig() *Config {
@@ -41,23 +43,33 @@ func NewConfig() *Config {
 		rest_host:   os.Getenv("REST_HOST"),
 		rest_port:   os.Getenv("REST_PORT"),
 		main_dir:    os.Getenv("MAIN_DIR"),
-		// jwt_secret:  os.Getenv("JWT_SECRET"),
-		// jwt_ttl:     os.Getenv("JWT_TTL"),
-		// refresh_ttl: os.Getenv("REFRESH_TTL"),
+		key_file:    os.Getenv("KEY_FILE"),
+		cert_file:   os.Getenv("CERT_FILE"),
+		jwt_secret:  os.Getenv("JWT_SECRET"),
+		jwt_ttl:     os.Getenv("JWT_TTL"),
+		refresh_ttl: os.Getenv("REFRESH_TTL"),
 	}
 }
 
-// func (cfg *Config) GetRefreshTTL() string {
-// 	return cfg.refresh_ttl
-// }
+func (cfg *Config) GetRefreshTTL() string {
+	return cfg.refresh_ttl
+}
 
-// func (cfg *Config) GetJWTSecret() string {
-// 	return cfg.jwt_secret
-// }
+func (cfg *Config) GetJWTSecret() string {
+	return cfg.jwt_secret
+}
 
-// func (cfg *Config) GetJWTttl() string {
-// 	return cfg.jwt_ttl
-// }
+func (cfg *Config) GetJWTttl() string {
+	return cfg.jwt_ttl
+}
+
+func (cfg *Config) GetKeyFile() string {
+	return cfg.key_file
+}
+
+func (cfg *Config) GetCertFile() string {
+	return cfg.cert_file
+}
 
 func (cfg *Config) GetDBHost() string {
 	return cfg.db_host

@@ -1,15 +1,15 @@
 version: "3.9"
 
-# volumes:
-#   postgres-server:
+volumes:
+  postgres-server:
 
 services:
-  app:
-      build: .
-      ports:
-        - "8080:8080"
-      depends_on:
-        - "postgres"
+#  app:
+#      build: .
+#      ports:
+#        - "8080:8080"
+#      depends_on:
+#        - "postgres"
 
   postgres:
     image: 'postgres:latest'
@@ -24,4 +24,4 @@ services:
       POSTGRES_DB: aero-internship
     volumes:
       - ./db:/docker-entrypoint-initdb.d/
-      # - postgres-server:/var/lib/postgres-server/data
+      - postgres-server:/var/lib/postgres-server/data

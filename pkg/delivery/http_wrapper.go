@@ -1,24 +1,23 @@
 package delivery
 
 import (
+	pb "aero-internship/gen/api"
+	"aero-internship/internal/adapters/handlers"
 	"aero-internship/pkg/config"
 	"context"
 	"fmt"
-	"net/http"
-
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-
-	pb "aero-internship/gen/api"
+	"net/http"
 )
 
 type RESTServer struct {
 	mux *runtime.ServeMux
 }
 
-func NewRESTServer(cfg *config.Config) (*RESTServer, error) {
-	mux, err := NewWrapperMux(cfg)
+func NewRESTServer(cfg *config.Config, tm *handlers.Handler) (*RESTServer, error) {
+	mux, err := NewWrapperMux(cfg, tm.AuthHandler)
 	if err != nil {
 		return nil, err
 	}
@@ -27,8 +26,14 @@ func NewRESTServer(cfg *config.Config) (*RESTServer, error) {
 	}, nil
 }
 
-func NewWrapperMux(cfg *config.Config) (*runtime.ServeMux, error) {
-	mux := runtime.NewServeMux()
+func NewWrapperMux(cfg *config.Config, s handlers.AuthHandler) (*runtime.ServeMux, error) {
+	mux := runtime.NewServeMux(
+		runtime.WithIncomingHeaderMatcher(customMatcher),
+	)
+
+	mux.HandlePath("POST", "/signup", s.SignUp)
+	mux.HandlePath("GET", "/signin", s.SignIn)
+
 	return mux, nil
 }
 
@@ -36,6 +41,7 @@ func (restServer *RESTServer) Run(cfg *config.Config) error {
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
+
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 	pb.RegisterContentCheckServiceHandlerFromEndpoint(
 		ctx,
@@ -50,4 +56,13 @@ func (restServer *RESTServer) Run(cfg *config.Config) error {
 		return err
 	}
 	return nil
+}
+
+func customMatcher(key string) (string, bool) {
+	switch key {
+	case "Authorization":
+		return key, true
+	default:
+		return runtime.DefaultHeaderMatcher(key)
+	}
 }

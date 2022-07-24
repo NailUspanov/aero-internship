@@ -5,11 +5,15 @@ import (
 	"context"
 )
 
-type GRPCServer struct {
+type HealthCheckHandler struct {
 	api.UnimplementedContentCheckServiceServer
 }
 
-func (s *GRPCServer) CheckHealth(ctx context.Context, request *api.EmptyRequest) (*api.HealthResponse, error) {
+func NewHealthCheckHandler() *HealthCheckHandler {
+	return &HealthCheckHandler{}
+}
+
+func (s *HealthCheckHandler) CheckHealth(ctx context.Context, request *api.EmptyRequest) (*api.HealthResponse, error) {
 	return &api.HealthResponse{
 		ServiceName:   "Some service",
 		ServiceStatus: "200",
