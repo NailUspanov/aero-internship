@@ -1,6 +1,9 @@
 package app
 
 import (
+	"aero-internship/internal/adapters/handlers"
+	postgres2 "aero-internship/internal/adapters/postgres"
+	"aero-internship/internal/domain/usecase"
 	"fmt"
 	"log"
 	"net"
@@ -22,19 +25,29 @@ type App struct {
 }
 
 func NewApp(cfg *config.Config) (*App, error) {
-	restServer, err := delivery.NewRESTServer(cfg)
-	if err != nil {
-		log.Fatalf("[REST] Can't create new REST server: %v", err)
-	}
-	grpcServer, err := delivery.NewGRPCServer(cfg)
-	if err != nil {
-		log.Fatalf("[gRPC] Can't create new gRPC server: %v", err)
-	}
+
 	//соединение с бд
 	db, err := postgres.NewPostgresDB(cfg)
 	if err != nil {
-		logrus.Fatalf("failed to initialize db.sql %s", err.Error())
+		logrus.Fatalf("failed to initialize db %s", err.Error())
 	}
+
+	repos := postgres2.NewRepository(db, cfg)
+
+	services := usecase.NewService(cfg, *repos)
+
+	handler := handlers.NewHandler(cfg, services)
+
+	grpcServer, err := delivery.NewGRPCServer(handler, services)
+	if err != nil {
+		log.Fatalf("[gRPC] Can't create new gRPC server: %v", err)
+	}
+
+	restServer, err := delivery.NewRESTServer(cfg, handler)
+	if err != nil {
+		log.Fatalf("[REST] Can't create new REST server: %v", err)
+	}
+
 	return &App{
 		cfg:        cfg,
 		restServer: restServer,

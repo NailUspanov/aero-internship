@@ -2,16 +2,18 @@ package delivery
 
 import (
 	pb "aero-internship/gen/api"
-	v1 "aero-internship/internal/adapters/handlers/v1"
-	"aero-internship/pkg/config"
-
+	"aero-internship/internal/adapters/handlers"
+	"aero-internship/internal/domain/usecase"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 // функция создает новый gRPC сервер
-func NewGRPCServer(cfg *config.Config) (*grpc.Server, error) {
-	grpc_server := grpc.NewServer()
-	pb.RegisterContentCheckServiceServer(grpc_server, &v1.GRPCServer{})
+func NewGRPCServer(handlers *handlers.Handler, services *usecase.Service) (*grpc.Server, error) {
+
+	opts := []grpc.ServerOption{grpc.Creds(insecure.NewCredentials()), grpc.UnaryInterceptor(services.UnaryInterceptor)}
+	grpc_server := grpc.NewServer(opts...)
+	pb.RegisterContentCheckServiceServer(grpc_server, handlers.ContentCheckServiceServer)
 	// pb.RegisterNewsServiceServer(grpc_server, &newsServiceServer{})
 	// pb.RegisterTagServiceServer(grpc_server, &tagServiceServer{})
 	return grpc_server, nil
