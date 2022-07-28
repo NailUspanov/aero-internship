@@ -15,7 +15,7 @@ func NewRefreshSessionsRepository(cfg *config.Config, db *sqlx.DB) *RefreshSessi
 	return &RefreshSessionsRepository{cfg: cfg, db: db}
 }
 
-func (r *RefreshSessionsRepository) MakeNewSession(cfg *config.Config, userId int, refreshToken string) error {
+func (r *RefreshSessionsRepository) MakeNewSession(cfg *config.Config, userId string, refreshToken string) error {
 
 	//начало транзакции
 	tx, err := r.db.Begin()
@@ -24,7 +24,7 @@ func (r *RefreshSessionsRepository) MakeNewSession(cfg *config.Config, userId in
 	}
 
 	q := `
-		insert into RefreshSessions (userId,refreshToken,expiresIn,createdAt) 
+		insert into RefreshSessions (user_id,refreshToken,expiresIn,createdAt) 
 		values ($1,$2,$3,$4)
 	`
 

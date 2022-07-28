@@ -1,7 +1,7 @@
 package v1
 
 import (
-	users2 "aero-internship/internal/domain/entity/users"
+	users_entity "aero-internship/internal/domain/entity/users"
 	"aero-internship/internal/domain/usecase"
 	"aero-internship/internal/domain/usecase/auth_usecase"
 	"aero-internship/pkg/config"
@@ -14,16 +14,16 @@ import (
 )
 
 type AuthHandler struct {
-	usecase.Service
-	cfg *config.Config
+	service usecase.Service
+	cfg     *config.Config
 }
 
 func NewAuthHandler(cfg *config.Config, service usecase.Service) *AuthHandler {
-	return &AuthHandler{Service: service, cfg: cfg}
+	return &AuthHandler{service: service, cfg: cfg}
 }
 
 func (a AuthHandler) SignUp(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
-	var userDTO users2.UserDTO
+	var userDTO users_entity.UserDTO
 	userDTO_json, err := io.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -36,7 +36,7 @@ func (a AuthHandler) SignUp(w http.ResponseWriter, r *http.Request, pathParams m
 		w.Write([]byte(fmt.Sprintf("Can't unmarshal body: %v", err)))
 		return
 	}
-	tokens, err := a.Service.AuthService.RegisterUser(&userDTO)
+	tokens, err := a.service.AuthService.RegisterUser(&userDTO)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(fmt.Sprintf("Can't register user: %v", err)))
@@ -66,7 +66,7 @@ func (a AuthHandler) SignIn(w http.ResponseWriter, r *http.Request, pathParams m
 		w.Write([]byte("Auth went wrong!"))
 		return
 	}
-	tokens, err := a.AuthService.SignIn(&auth_usecase.SignInDTO{
+	tokens, err := a.service.AuthService.SignIn(&auth_usecase.SignInDTO{
 		Email:    email,
 		Password: password,
 	})

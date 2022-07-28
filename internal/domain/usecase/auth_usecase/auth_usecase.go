@@ -1,7 +1,7 @@
 package auth_usecase
 
 import (
-	"aero-internship/internal/adapters/postgres"
+	"aero-internship/internal/adapters"
 	"aero-internship/internal/domain/entity/tokens"
 	users2 "aero-internship/internal/domain/entity/users"
 	"aero-internship/pkg/config"
@@ -26,21 +26,21 @@ const (
 )
 
 type AuthService struct {
-	postgres.Repository
-	secret []byte
-	method jwt.SigningMethod
-	ttl    time.Duration
-	cfg    *config.Config
+	dataTransfer adapters.DataTransfer
+	secret       []byte
+	method       jwt.SigningMethod
+	ttl          time.Duration
+	cfg          *config.Config
 }
 
-func NewAuthService(cfg *config.Config, repo postgres.Repository) *AuthService {
+func NewAuthService(cfg *config.Config, dataTransfer adapters.DataTransfer) *AuthService {
 	jwt_ttl, _ := time.ParseDuration(cfg.GetJWTttl())
 	return &AuthService{
-		secret:     []byte(cfg.GetJWTSecret()),
-		method:     jwt.SigningMethodHS256,
-		ttl:        jwt_ttl,
-		cfg:        cfg,
-		Repository: repo,
+		secret:       []byte(cfg.GetJWTSecret()),
+		method:       jwt.SigningMethodHS256,
+		ttl:          jwt_ttl,
+		cfg:          cfg,
+		dataTransfer: dataTransfer,
 	}
 }
 
@@ -59,7 +59,7 @@ func (tm *AuthService) GenerateTokens(tknDTO *tokens.TokenDTO) (*Tokens, error) 
 
 	refreshToken := uuid.New().String()
 
-	err = tm.Repository.MakeNewSession(tm.cfg, tknDTO.UserId, refreshToken)
+	err = tm.dataTransfer.Repo.MakeNewSession(tm.cfg, tknDTO.UserId, refreshToken)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +74,7 @@ func (tm *AuthService) GenerateTokensFromUserDTO(userDTO *users2.UserDTO) (*Toke
 
 	log.Printf("ok, we have UserDTO...\n")
 
-	tokenDTO, err := tm.Repository.GetTokenDTOFromUserDTO(tm.cfg, userDTO)
+	tokenDTO, err := tm.dataTransfer.Repo.GetTokenDTOFromUserDTO(tm.cfg, userDTO)
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +110,7 @@ func (tm *AuthService) ParseToken(tkn string) (TokenDTO, error) {
 		return TokenDTO{}, errors.New("claims is not valid")
 	}
 	return TokenDTO{
-		UserId:  strconv.Itoa(int(claims["sub"].(float64))),
+		UserId:  claims["sub"].(string),
 		IsAdmin: claims["role"].(bool),
 	}, nil
 }
@@ -124,7 +124,8 @@ func (tm *AuthService) RegisterUser(userDTO *users2.UserDTO) (*Tokens, error) {
 
 	log.Printf("Let's make a txn!\n")
 
-	err = tm.Users.MakeRegistrationTxn(tm.cfg, users2.UserDTO{
+	err = tm.dataTransfer.Repo.Users.MakeRegistrationTxn(tm.cfg, users2.User{
+		Id:       uuid.New().String(),
 		Name:     userDTO.Name,
 		Email:    userDTO.Email,
 		Password: hashedPassword,
@@ -149,7 +150,7 @@ func (tm *AuthService) RegisterUser(userDTO *users2.UserDTO) (*Tokens, error) {
 
 func (tm *AuthService) SignIn(signInDTO *SignInDTO) (*Tokens, error) {
 
-	user, err := tm.Users.GetUserDTObyEmail(tm.cfg, signInDTO.Email)
+	user, err := tm.dataTransfer.Repo.GetUserDTObyEmail(tm.cfg, signInDTO.Email)
 	if err != nil {
 		return nil, err
 	}
@@ -210,14 +211,14 @@ func (tm *AuthService) authenticateClient(ctx context.Context, cfg *config.Confi
 
 		clientLogin := strings.Join(md["login"], "")
 
-		user, err := tm.Users.GetUserDTObyEmail(cfg, clientLogin)
+		user, err := tm.dataTransfer.Repo.GetUserDTObyEmail(cfg, clientLogin)
 		if err != nil {
 			return "", err
 		}
 
 		log.Printf("authenticated client: %s", clientLogin)
 
-		return strconv.Itoa(user.Id), nil
+		return user.Id, nil
 	}
 	return "", fmt.Errorf("missing credentials")
 }

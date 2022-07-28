@@ -10,13 +10,13 @@ import (
 )
 
 type RefreshSessions interface {
-	MakeNewSession(cfg *config.Config, userId int, refreshToken string) error
+	MakeNewSession(cfg *config.Config, userId string, refreshToken string) error
 }
 
 type Users interface {
 	GetUserDTObyEmail(cfg *config.Config, email string) (*users.User, error)
 	GetTokenDTOFromUserDTO(cfg *config.Config, userDTO *users.UserDTO) (*tokens.TokenDTO, error)
-	MakeRegistrationTxn(cfg *config.Config, userDTO users.UserDTO) error
+	MakeRegistrationTxn(cfg *config.Config, userDTO users.User) error
 }
 
 type Repository struct {

@@ -17,7 +17,7 @@ type RESTServer struct {
 }
 
 func NewRESTServer(cfg *config.Config, tm *handlers.Handler) (*RESTServer, error) {
-	mux, err := NewWrapperMux(cfg, tm.AuthHandler)
+	mux, err := NewWrapperMux(cfg, *tm)
 	if err != nil {
 		return nil, err
 	}
@@ -26,13 +26,14 @@ func NewRESTServer(cfg *config.Config, tm *handlers.Handler) (*RESTServer, error
 	}, nil
 }
 
-func NewWrapperMux(cfg *config.Config, s handlers.AuthHandler) (*runtime.ServeMux, error) {
+func NewWrapperMux(cfg *config.Config, s handlers.Handler) (*runtime.ServeMux, error) {
 	mux := runtime.NewServeMux(
 		runtime.WithIncomingHeaderMatcher(customMatcher),
 	)
 
 	mux.HandlePath("POST", "/signup", s.SignUp)
 	mux.HandlePath("GET", "/signin", s.SignIn)
+	mux.HandlePath("POST", "/test", s.Create)
 
 	return mux, nil
 }

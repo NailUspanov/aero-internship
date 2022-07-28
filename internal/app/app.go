@@ -1,9 +1,10 @@
 package app
 
 import (
+	"aero-internship/internal/adapters"
 	"aero-internship/internal/adapters/handlers"
-	postgres2 "aero-internship/internal/adapters/postgres"
 	"aero-internship/internal/domain/usecase"
+	"aero-internship/pkg/client/minio_client"
 	"fmt"
 	"log"
 	"net"
@@ -32,9 +33,15 @@ func NewApp(cfg *config.Config) (*App, error) {
 		logrus.Fatalf("failed to initialize db %s", err.Error())
 	}
 
-	repos := postgres2.NewRepository(db, cfg)
+	//соединение с minio
+	minio, err := minio_client.NewMinioClient(cfg)
+	if err != nil {
+		logrus.Fatalf("failed to initialize minio connection %s", err.Error())
+	}
 
-	services := usecase.NewService(cfg, *repos)
+	dataTransfer := adapters.NewDataTransfer(db, cfg, minio)
+
+	services := usecase.NewService(cfg, *dataTransfer)
 
 	handler := handlers.NewHandler(cfg, services)
 

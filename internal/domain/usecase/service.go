@@ -1,10 +1,13 @@
 package usecase
 
 import (
-	"aero-internship/internal/adapters/postgres"
+	"aero-internship/gen/api"
+	"aero-internship/internal/adapters"
+	"aero-internship/internal/domain/entity/files"
 	"aero-internship/internal/domain/entity/tokens"
 	"aero-internship/internal/domain/entity/users"
 	"aero-internship/internal/domain/usecase/auth_usecase"
+	"aero-internship/internal/domain/usecase/files_usecase"
 	"aero-internship/internal/domain/usecase/news_usecase"
 	"aero-internship/pkg/config"
 	"context"
@@ -20,16 +23,25 @@ type AuthService interface {
 	UnaryInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error)
 }
 
+type FileService interface {
+	GetFile(ctx context.Context, bucketName, fileName string) (*api.File, error)
+	GetFilesByNewsID(ctx context.Context, newsID string) ([]*api.File, error)
+	CreateFile(ctx context.Context, newsID string, file files.FileDTO) error
+	DeleteFile(ctx context.Context, newsID, fileId string) error
+}
+
 type NewsService interface {
 }
 
 type Service struct {
 	AuthService
 	NewsService
+	FileService
 }
 
-func NewService(cfg *config.Config, repository postgres.Repository) *Service {
+func NewService(cfg *config.Config, dataTransfer adapters.DataTransfer) *Service {
 	return &Service{
-		AuthService: auth_usecase.NewAuthService(cfg, repository),
-		NewsService: news_usecase.NewNewsService(cfg, repository)}
+		AuthService: auth_usecase.NewAuthService(cfg, dataTransfer),
+		NewsService: news_usecase.NewNewsService(cfg, dataTransfer),
+		FileService: files_usecase.NewFileService(cfg, dataTransfer)}
 }

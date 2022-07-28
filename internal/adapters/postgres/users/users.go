@@ -19,7 +19,7 @@ func NewUsers(cfg *config.Config, db *sqlx.DB) *Users {
 	return &Users{cfg: cfg, db: db}
 }
 
-func (u *Users) MakeRegistrationTxn(cfg *config.Config, userDTO users.UserDTO) error {
+func (u *Users) MakeRegistrationTxn(cfg *config.Config, user users.User) error {
 
 	//начало транзакции
 	tx, err := u.db.Begin()
@@ -28,15 +28,16 @@ func (u *Users) MakeRegistrationTxn(cfg *config.Config, userDTO users.UserDTO) e
 	}
 
 	q := `
-		insert into Users (name,email,passwordHash,isadmin,registeredFrom) 
-		values ($1,$2,$3,$4,$5)
+		insert into Users (id, name,email,passwordHash,isadmin,registeredFrom) 
+		values ($1,$2,$3,$4,$5,$6)
 	`
 	_, err = tx.Exec(
 		q,
-		userDTO.Name,
-		userDTO.Email,
-		userDTO.Password,
-		userDTO.IsAdmin,
+		user.Id,
+		user.Name,
+		user.Email,
+		user.Password,
+		user.IsAdmin,
 		time.Now().Unix(),
 	)
 
