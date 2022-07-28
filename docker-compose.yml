@@ -23,9 +23,9 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: aero-internship
-    volumes:
-      - ./db:/docker-entrypoint-initdb.d/
-      - postgres-server:/var/lib/postgres-server/data
+#    volumes:
+#      - ./db:/docker-entrypoint-initdb.d/
+#      - postgres-server:/var/lib/postgres-server/data
 
   minio:
     container_name: minio
@@ -38,7 +38,7 @@ services:
       MINIO_ROOT_USER: aero
       MINIO_ROOT_PASSWORD: minio123
     volumes:
-      - minio_client-storage:/data
+      - minio-storage:/data
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
       interval: 30s

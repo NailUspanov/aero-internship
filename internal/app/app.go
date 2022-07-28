@@ -5,6 +5,7 @@ import (
 	"aero-internship/internal/adapters/handlers"
 	"aero-internship/internal/domain/usecase"
 	"aero-internship/pkg/client/minio_client"
+
 	"fmt"
 	"log"
 	"net"
@@ -31,6 +32,12 @@ func NewApp(cfg *config.Config) (*App, error) {
 	db, err := postgres.NewPostgresDB(cfg)
 	if err != nil {
 		logrus.Fatalf("failed to initialize db %s", err.Error())
+	}
+
+	err = delivery.MigrateUp(db, cfg)
+	if err != nil {
+		logrus.Fatalf("failed to initialize migrations %s", err.Error())
+		return nil, err
 	}
 
 	//соединение с minio
