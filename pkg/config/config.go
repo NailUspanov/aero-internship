@@ -14,16 +14,21 @@ type Config struct {
 	db_user     string
 	db_password string
 	db_ssl      string
-	grpc_host   string
-	grpc_port   string
-	rest_host   string
-	rest_port   string
+
+	grpc_host string
+	grpc_port string
+
+	rest_host string
+	rest_port string
+
 	main_dir    string
-	cert_file   string
-	key_file    string
 	jwt_secret  string
 	jwt_ttl     string
 	refresh_ttl string
+
+	minio_endpoint          string
+	minio_access_key_id     string
+	minio_secret_access_key string
 }
 
 func NewConfig() *Config {
@@ -32,22 +37,23 @@ func NewConfig() *Config {
 		log.Fatal(err)
 	}
 	return &Config{
-		db_host:     os.Getenv("DB_HOST"),
-		db_port:     os.Getenv("DB_PORT"),
-		db_name:     os.Getenv("DB_NAME"),
-		db_user:     os.Getenv("DB_USERNAME"),
-		db_password: os.Getenv("DB_PASSWORD"),
-		db_ssl:      os.Getenv("DB_SSLMODE"),
-		grpc_host:   os.Getenv("GRPC_HOST"),
-		grpc_port:   os.Getenv("GRPC_PORT"),
-		rest_host:   os.Getenv("REST_HOST"),
-		rest_port:   os.Getenv("REST_PORT"),
-		main_dir:    os.Getenv("MAIN_DIR"),
-		key_file:    os.Getenv("KEY_FILE"),
-		cert_file:   os.Getenv("CERT_FILE"),
-		jwt_secret:  os.Getenv("JWT_SECRET"),
-		jwt_ttl:     os.Getenv("JWT_TTL"),
-		refresh_ttl: os.Getenv("REFRESH_TTL"),
+		db_host:                 os.Getenv("DB_HOST"),
+		db_port:                 os.Getenv("DB_PORT"),
+		db_name:                 os.Getenv("DB_NAME"),
+		db_user:                 os.Getenv("DB_USERNAME"),
+		db_password:             os.Getenv("DB_PASSWORD"),
+		db_ssl:                  os.Getenv("DB_SSLMODE"),
+		grpc_host:               os.Getenv("GRPC_HOST"),
+		grpc_port:               os.Getenv("GRPC_PORT"),
+		rest_host:               os.Getenv("REST_HOST"),
+		rest_port:               os.Getenv("REST_PORT"),
+		main_dir:                os.Getenv("MAIN_DIR"),
+		jwt_secret:              os.Getenv("JWT_SECRET"),
+		jwt_ttl:                 os.Getenv("JWT_TTL"),
+		refresh_ttl:             os.Getenv("REFRESH_TTL"),
+		minio_endpoint:          os.Getenv("MINIO_ENDPOINT"),
+		minio_secret_access_key: os.Getenv("MINIO_SECRET_ACCESS_KEY"),
+		minio_access_key_id:     os.Getenv("MINIO_ACCESS_KEY_ID"),
 	}
 }
 
@@ -63,12 +69,16 @@ func (cfg *Config) GetJWTttl() string {
 	return cfg.jwt_ttl
 }
 
-func (cfg *Config) GetKeyFile() string {
-	return cfg.key_file
+func (cfg *Config) GetMinioEndpoint() string {
+	return cfg.minio_endpoint
 }
 
-func (cfg *Config) GetCertFile() string {
-	return cfg.cert_file
+func (cfg *Config) GetMinioSecretAccessKey() string {
+	return cfg.minio_secret_access_key
+}
+
+func (cfg *Config) GetMinioAccessKeyId() string {
+	return cfg.minio_access_key_id
 }
 
 func (cfg *Config) GetDBHost() string {

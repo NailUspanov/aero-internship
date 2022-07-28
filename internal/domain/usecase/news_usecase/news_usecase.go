@@ -1,15 +1,15 @@
 package news_usecase
 
 import (
-	"aero-internship/internal/adapters/postgres"
+	"aero-internship/internal/adapters"
 	"aero-internship/pkg/config"
 )
 
 type NewsService struct {
-	postgres.Repository
+	adapters.DataTransfer
 	cfg *config.Config
 }
 
-func NewNewsService(cfg *config.Config, repository postgres.Repository) *NewsService {
-	return &NewsService{Repository: repository, cfg: cfg}
+func NewNewsService(cfg *config.Config, dataTransfer adapters.DataTransfer) *NewsService {
+	return &NewsService{DataTransfer: dataTransfer, cfg: cfg}
 }
