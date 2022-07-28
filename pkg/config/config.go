@@ -29,6 +29,8 @@ type Config struct {
 	minio_endpoint          string
 	minio_access_key_id     string
 	minio_secret_access_key string
+
+	migrations_path string
 }
 
 func NewConfig() *Config {
@@ -54,7 +56,12 @@ func NewConfig() *Config {
 		minio_endpoint:          os.Getenv("MINIO_ENDPOINT"),
 		minio_secret_access_key: os.Getenv("MINIO_SECRET_ACCESS_KEY"),
 		minio_access_key_id:     os.Getenv("MINIO_ACCESS_KEY_ID"),
+		migrations_path:         os.Getenv("MIGRATIONS_PATH"),
 	}
+}
+
+func (cfg *Config) GetMigrationPath() string {
+	return cfg.migrations_path
 }
 
 func (cfg *Config) GetRefreshTTL() string {
