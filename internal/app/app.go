@@ -5,6 +5,7 @@ import (
 	"aero-internship/internal/adapters/handlers"
 	"aero-internship/internal/domain/usecase"
 	"aero-internship/pkg/client/minio_client"
+	"aero-internship/pkg/client/redis_client"
 
 	"fmt"
 	"log"
@@ -37,7 +38,6 @@ func NewApp(cfg *config.Config) (*App, error) {
 	err = delivery.MigrateUp(db, cfg)
 	if err != nil {
 		logrus.Fatalf("failed to initialize migrations %s", err.Error())
-		return nil, err
 	}
 
 	//соединение с minio
@@ -46,7 +46,12 @@ func NewApp(cfg *config.Config) (*App, error) {
 		logrus.Fatalf("failed to initialize minio connection %s", err.Error())
 	}
 
-	dataTransfer := adapters.NewDataTransfer(db, cfg, minio)
+	redisClient, err := redis_client.NewRedisClient(cfg, 0)
+	if err != nil {
+		logrus.Fatalf("failed to initialize redis cache: %s", err.Error())
+	}
+
+	dataTransfer := adapters.NewDataTransfer(db, cfg, minio, redisClient)
 
 	services := usecase.NewService(cfg, *dataTransfer)
 

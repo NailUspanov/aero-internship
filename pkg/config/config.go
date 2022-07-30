@@ -31,6 +31,9 @@ type Config struct {
 	minio_secret_access_key string
 
 	migrations_path string
+
+	redis_addr string
+	redis_pass string
 }
 
 func NewConfig() *Config {
@@ -57,7 +60,17 @@ func NewConfig() *Config {
 		minio_secret_access_key: os.Getenv("MINIO_SECRET_ACCESS_KEY"),
 		minio_access_key_id:     os.Getenv("MINIO_ACCESS_KEY_ID"),
 		migrations_path:         os.Getenv("MIGRATIONS_PATH"),
+		redis_addr:              os.Getenv("REDIS_ADDR"),
+		redis_pass:              os.Getenv("REDIS_PASS"),
 	}
+}
+
+func (cfg *Config) GetRedisPass() string {
+	return cfg.redis_pass
+}
+
+func (cfg *Config) GetRedisAddr() string {
+	return cfg.redis_addr
 }
 
 func (cfg *Config) GetMigrationPath() string {
